@@ -1,0 +1,6 @@
+{"level":"info","msg":"Start Tcp Server Success By Addr: [ 127.0.0.1:8081 ] ","time":"2021-12-10T15:15:26+08:00"}
+signal: interrupt
+{"level":"info","msg":"Start Tcp Server Success By Addr: [ 127.0.0.1:8081 ] ","time":"2021-12-10T15:15:53+08:00"}
+signal: interrupt
+{"level":"info","msg":"Start Tcp Server Success By Addr: [ 127.0.0.1:8081 ] ","time":"2021-12-10T15:16:11+08:00"}
+signal: killed

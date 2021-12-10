@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <link rel="icon" href="data:;base64,=">
+        <title>Entry Task</title>
+        <link rel="stylesheet" href="/static/layui/css/layui.css"  media="all">
+    </head>
+    <body>
+
+    <div class="header"><h3></h3></div>
+    <div class="body">
+        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+            <legend> 用户信息</legend>
+        </fieldset>
+        <form class="layui-form" action="">
+            <div class="layui-upload layui-form-item">
+                <div class="layui-upload-list">
+                    <img class="layui-upload-img" id="demo1" width="100px" height="100px" src="{{.user.PicUrl}}">
+                    <input id="pic" name="picUrl" hidden value="{{.user.PicUrl}}" readonly unselectable="on">
+                    <p id="demoText"></p>
+                </div>
+                <button type="button" class="layui-btn layui-btn-sm" id="test1">更换头像</button>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">用户账号</label>
+                <div class="layui-input-inline">
+                    <input id="user" type="text" name="username" lay-verify="required" value="{{.user.Username}}" readonly unselectable="on" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">用户昵称</label>
+                <div class="layui-input-inline">
+                    <input id="nick" type="text" name="nickname" lay-verify="required" lay-reqtext="昵称不能为空" placeholder="请输入昵称" value="{{.user.Nickname}}" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button type="submit" class="layui-btn" lay-submit="" lay-filter="edit">立即提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    </div>
+    </body>
+    <script src="/static/js/jq.js" charset="utf-8"></script>
+    <script src="/static/layui/layui.js" charset="utf-8"></script>
+    <script>
+        layui.use(['upload', 'element', 'layer'], function(){
+            var $ = layui.jquery
+                ,upload = layui.upload
+                ,form = layui.form
+                ,layer = layui.layer;
+
+            // 图片上传
+            var uploadInst = upload.render({
+                elem: '#test1'
+                ,url: '/upload'
+                ,before: function(obj){
+                    //预读本地文件示例，不支持ie8
+                    obj.preview(function(index, file, result){
+                        $('#demo1').attr('src', result);
+                    });
+                    layer.msg('上传中', {icon: 16, time: 0});
+                }
+                ,done: function(resp){
+                    //如果上传失败
+                    if(resp.status == 200){
+                        $('#demo1').attr('src', resp.pic_url);
+                        $('#pic').attr('value', resp.pic_url);
+                        $('#demoText').html(''); //置空上传失败的状态
+                        layer.msg('上传成功');
+                    } else {
+                        layer.msg('上传失败,请重试');
+                    }
+                }
+                ,error: function(){
+                    var demoText = $('#demoText');
+                    demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+                    demoText.find('.demo-reload').on('click', function(){
+                        uploadInst.upload();
+                    });
+                }
+            });
+
+            // 监听提交
+            form.on('submit(edit)', function(data){
+                $.post(
+                    //1 异步提交的urL
+                    '/userEdit',
+                    //2 form表单以键值对形式传输
+                    data.field,
+                    //3 访问后成功的回调函数
+                    function (response) {
+                        response = JSON.parse(response)
+                        if (response.status == 200) {
+                            layer.msg("User Edit Success!", {icon: 1},);
+                            window.location.reload();
+                        }else if(response.status == 1004){
+                            layer.msg(response.message, {icon: 1},);
+                            window.location.href='/login';
+                        }else{
+                            layer.msg(response.message, {icon: 5});
+                        }
+                    }
+                );
+                return false;
+            });
+        })
+    </script>
