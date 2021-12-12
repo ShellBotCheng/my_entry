@@ -27,23 +27,23 @@ func init() {
 	gob.Register(tcpEntity.DelSessionResp{})
 }
 
-// createSessionID 生成sessionID，随机字符串+用户名的MD5值
-func createSessionID(uname string) string {
+// createSessionId 生成sessionId，随机字符串+用户名的MD5值
+func createSessionId(uname string) string {
 	randomString, _ := utils.GenerateRandomString(utils.RandomLen)
 	s := fmt.Sprintf("%s.%s", randomString, uname)
-	sessionID := utils.MD5(s)
-	return sessionID
+	sessionId := utils.MD5(s)
+	return sessionId
 }
 
 // CheckSession 检查会话
 func CheckSession(r *http.Request) (sessionInfo entity.SessionInfo, ok bool) {
-	cookie, err := r.Cookie("sessionID")
+	cookie, err := r.Cookie("sessionId")
 	if err != nil {
 		log.Error("get cookie err:%s", err)
 		return
 	}
-	sessionID := cookie.Value
-	sessionInfo, err = GetSession(sessionID)
+	sessionId := cookie.Value
+	sessionInfo, err = GetSession(sessionId)
 	if err != nil {
 		return
 	}
@@ -57,13 +57,14 @@ func CheckSession(r *http.Request) (sessionInfo entity.SessionInfo, ok bool) {
 		return
 	}
 	// 更新会话时间
-	refreshSessionRpc(sessionID)
+	go refreshSessionRpc(sessionId)
 	return sessionInfo, true
 }
 
 // SetSession 设置会话
-func SetSession(sessionID string, info entity.SessionInfo) bool {
+func SetSession(sessionId string, info entity.SessionInfo) bool {
 	conn, err := common.TcpPool.Get()
+	defer common.TcpPool.Put(conn)
 	if err != nil {
 		log.Error("get conn err:%s", err)
 		return false
@@ -74,10 +75,10 @@ func SetSession(sessionID string, info entity.SessionInfo) bool {
 	cli.CallRPC("SetSession", &rpc.SetSession)
 	infoStr, _ := json.Marshal(info)
 	req := tcpEntity.SetSessionReq{
-		SessionId:   sessionID,
+		SessionId:   sessionId,
 		SessionInfo: string(infoStr),
 	}
-	r := rpc.SetSession(req)
+	r, err := rpc.SetSession(req)
 	if err != nil {
 		log.Error("SetSession Error:%s", err)
 		return false
@@ -87,13 +88,11 @@ func SetSession(sessionID string, info entity.SessionInfo) bool {
 		return false
 	}
 	log.Info("set session ok")
-
-	_ = common.TcpPool.Put(conn)
 	return true
 }
 
 // GetSession 获取会话信息
-func GetSession(sessionID string) (sessionInfo entity.SessionInfo, err error) {
+func GetSession(sessionId string) (sessionInfo entity.SessionInfo, err error) {
 	sessionInfo = entity.SessionInfo{}
 	conn, err := common.TcpPool.Get()
 	defer common.TcpPool.Put(conn)
@@ -106,10 +105,10 @@ func GetSession(sessionID string) (sessionInfo entity.SessionInfo, err error) {
 
 	cli.CallRPC("GetSession", &rpc.GetSession)
 	req := tcpEntity.GetSessionReq{
-		SessionID: sessionID,
+		SessionId: sessionId,
 	}
 
-	r := rpc.GetSession(req)
+	r, err := rpc.GetSession(req)
 	if err != nil {
 		log.Error("GetSession Error:%s", err)
 		return
@@ -120,12 +119,12 @@ func GetSession(sessionID string) (sessionInfo entity.SessionInfo, err error) {
 	}
 
 	_ = json.Unmarshal([]byte(r.SessionInfo), &sessionInfo)
-	sessionInfo.SessionId = sessionID
+	sessionInfo.SessionId = sessionId
 	return sessionInfo, nil
 }
 
 // refreshSessionRpc 刷新会话
-func refreshSessionRpc(sessionID string) {
+func refreshSessionRpc(sessionId string) {
 	conn, err := common.TcpPool.Get()
 	defer common.TcpPool.Put(conn)
 	if err != nil {
@@ -137,10 +136,10 @@ func refreshSessionRpc(sessionID string) {
 
 	cli.CallRPC("RefreshSession", &rpc.RefreshSession)
 	req := tcpEntity.RefreshSessionReq{
-		SessionId: sessionID,
+		SessionId: sessionId,
 	}
 
-	r := rpc.RefreshSession(req)
+	r, err := rpc.RefreshSession(req)
 	if err != nil {
 		log.Error("RefreshSession Error:%s", err)
 		return
@@ -154,7 +153,7 @@ func refreshSessionRpc(sessionID string) {
 }
 
 // DelSession 销毁会话
-func DelSession(sessionID string) {
+func DelSession(sessionId string) (err error) {
 	conn, err := common.TcpPool.Get()
 	defer common.TcpPool.Put(conn)
 	if err != nil {
@@ -166,10 +165,10 @@ func DelSession(sessionID string) {
 
 	cli.CallRPC("DelSession", &rpc.DelSession)
 	req := tcpEntity.DelSessionReq{
-		SessionId: sessionID,
+		SessionId: sessionId,
 	}
 
-	r := rpc.DelSession(req)
+	r, err := rpc.DelSession(req)
 	if err != nil {
 		log.Error("err:%s", err)
 		return
@@ -179,4 +178,5 @@ func DelSession(sessionID string) {
 		return
 	}
 	log.Info("refresh session ok")
+	return
 }

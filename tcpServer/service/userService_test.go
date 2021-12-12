@@ -1,8 +1,8 @@
 package service
 
 import (
-	"fmt"
 	"myEntry/pkg/entity"
+	"reflect"
 	"testing"
 )
 
@@ -26,9 +26,30 @@ func TestGetUserInfo(t *testing.T) {
 	//		}
 	//	})
 	//}
+}
 
-	req := entity.GetUserInfoReq{}
-	req.Username = "wei"
-	resp := GetUserInfo(req)
-	fmt.Print(resp)
+func TestGetUserInfo1(t *testing.T) {
+	type args struct {
+		req entity.GetUserInfoReq
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantResp entity.GetUserInfoResp
+		wantErr  bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotResp, err := GetUserInfo(tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetUserInfo() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotResp, tt.wantResp) {
+				t.Errorf("GetUserInfo() gotResp = %v, want %v", gotResp, tt.wantResp)
+			}
+		})
+	}
 }

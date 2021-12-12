@@ -12,7 +12,7 @@ type GetUserInfoResp struct {
 	Nickname string
 	Password string
 	Salt     string
-	PicUrl   string
+	PicUrl   string `json:"pic_url"`
 }
 
 // EditUserReq 更新用户信息请求体
@@ -29,7 +29,7 @@ type EditUserResp struct {
 
 // GetSessionReq 获取会话信息
 type GetSessionReq struct {
-	SessionID string
+	SessionId string
 }
 
 // GetSessionResp 返回体

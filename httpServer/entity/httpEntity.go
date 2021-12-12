@@ -13,7 +13,7 @@ type UserInfo struct {
 type SessionInfo struct {
 	Username  string `json:"username"`  // 用户名
 	IP        string `json:"ip"`        // 用户IP地址
-	SessionId string `json:"SessionId"` // 会话ID
+	SessionId string `json:"sessionId"` // 会话ID
 }
 
 // UserAuth 登录验证实体

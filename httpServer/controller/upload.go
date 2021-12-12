@@ -2,8 +2,10 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	HttpCnf "myEntry/httpServer/conf"
+	"myEntry/httpServer/service"
 	"myEntry/pkg/content"
 	"myEntry/pkg/log"
 	"myEntry/pkg/utils"
@@ -25,13 +27,13 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 检查会话
-	//_, b := service.CheckSession(r)
-	//if !b {
-	//	resp.Msg = fmt.Sprintf("%s", content.SessionExpiredErrOR)
-	//	msg, _ := json.Marshal(resp)
-	//	_, _ = w.Write(msg)
-	//	return
-	//}
+	_, b := service.CheckSession(r)
+	if !b {
+		resp.Msg = fmt.Sprintf("%s", content.SessionExpiredErrOR)
+		msg, _ := json.Marshal(resp)
+		_, _ = w.Write(msg)
+		return
+	}
 	picture, _, err := r.FormFile("file")
 	if err != nil {
 		return

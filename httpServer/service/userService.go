@@ -35,8 +35,8 @@ func GetUserInfo(uname string) (user entity.UserInfo, err error) {
 	req := tcpEntity.GetUserInfoReq{
 		Username: uname,
 	}
-	//defer common.TcpPool.Put(conn)
-	r := rpc.GetUser(req)
+	defer common.TcpPool.Put(conn)
+	r, err := rpc.GetUser(req)
 	if err != nil {
 		log.Error("GetUserInfo Error:%s", err)
 		return
@@ -69,7 +69,7 @@ func UpdateUserInfo(r *http.Request) (user entity.UserInfo, err error) {
 		PicUrl:   r.FormValue("picUrl"),
 	}
 	defer common.TcpPool.Put(conn)
-	resp := rpc.EditUser(req)
+	resp, err := rpc.EditUser(req)
 	if err != nil {
 		log.Error("EditUser Error:%s", err)
 		return

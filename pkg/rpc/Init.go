@@ -8,12 +8,12 @@ import (
 
 // rpc接口参数定义
 
-var GetUser func(req entity.GetUserInfoReq) entity.GetUserInfoResp
-var EditUser func(req entity.EditUserReq) entity.EditUserResp
-var GetSession func(req entity.GetSessionReq) entity.GetSessionResp
-var RefreshSession func(req entity.RefreshSessionReq) entity.RefreshSessionResp
-var SetSession func(req entity.SetSessionReq) entity.SetSessionResp
-var DelSession func(req entity.DelSessionReq) entity.DelSessionResp
+var GetUser func(req entity.GetUserInfoReq) (entity.GetUserInfoResp, error)
+var EditUser func(req entity.EditUserReq) (entity.EditUserResp, error)
+var GetSession func(req entity.GetSessionReq) (entity.GetSessionResp, error)
+var RefreshSession func(req entity.RefreshSessionReq) (entity.RefreshSessionResp, error)
+var SetSession func(req entity.SetSessionReq) (entity.SetSessionResp, error)
+var DelSession func(req entity.DelSessionReq) (entity.DelSessionResp, error)
 
 // registerRpcEntity 注册实体
 func registerRpcEntity() {

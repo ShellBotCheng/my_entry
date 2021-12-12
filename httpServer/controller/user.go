@@ -11,14 +11,6 @@ import (
 
 func UserInfo(w http.ResponseWriter, r *http.Request) {
 	data := make(map[string]interface{})
-	data["user"] = entity.UserInfo{
-		Username: "admin",
-		Nickname: "admin昵称",
-		PicUrl:   "/static/pic/111.jpeg",
-	}
-	view.Render(data, w, "user")
-	return
-	// 检查会话
 	sessionInfo, b := service.CheckSession(r)
 	if !b {
 		http.Redirect(w, r, "/login", http.StatusFound)
@@ -50,14 +42,14 @@ func Edit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// 检查会话
-	//_, b := service.CheckSession(r)
-	//if !b {
-	resp.Status = content.ExpireSession
-	//	resp.Msg = "Login has been Expired, please relogin"
-	//	msg, _ := json.Marshal(resp)
-	//	_, _ = w.Write(msg)
-	//	return
-	//}
+	_, b := service.CheckSession(r)
+	if !b {
+		resp.Status = content.ExpireSession
+		resp.Msg = "Login has been Expired, please relogin"
+		msg, _ := json.Marshal(resp)
+		_, _ = w.Write(msg)
+		return
+	}
 
 	user, err := service.UpdateUserInfo(r)
 	if err != nil {

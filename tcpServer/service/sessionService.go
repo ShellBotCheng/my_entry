@@ -7,57 +7,51 @@ import (
 )
 
 // GetSession 获取会话信息
-func GetSession(req entity.GetSessionReq ) entity.GetSessionResp {
-	resp := entity.GetSessionResp{
-		Status : content.SucCode,
-	}
-	session, err := redis.Get(req.SessionID)
+func GetSession(req entity.GetSessionReq) (resp entity.GetSessionResp, err error) {
+	resp.Status = content.SucCode
+
+	session, err := redis.Get(req.SessionId)
 	if err != nil {
 		resp.Status = content.TcpServerError
+		return
 	}
-	if session == content.EmptyString{
+	if session == content.EmptyString {
 		resp.Status = content.TcpSessionMiss
+		return
 	}
 	resp.SessionInfo = session
-	return resp
+	return
 }
 
 // SetSession  设置会话信息
-func SetSession(req entity.SetSessionReq) entity.SetSessionResp {
-	resp := entity.SetSessionResp{
-		Status : content.SucCode,
-	}
+func SetSession(req entity.SetSessionReq) (resp entity.SetSessionResp, err error) {
+	resp.Status = content.SucCode
 
-	err := redis.SetEx(req.SessionId, req.SessionInfo, content.SessionExpireTime)
+	err = redis.SetEx(req.SessionId, req.SessionInfo, content.SessionExpTime)
 	if err != nil {
 		resp.Status = content.TcpServerError
 	}
-	return resp
+	return
 }
 
 // RefreshSession 刷新会话
-func RefreshSession(req entity.RefreshSessionReq ) entity.RefreshSessionResp{
-	resp := entity.RefreshSessionResp{
-		Status : content.SucCode,
-	}
+func RefreshSession(req entity.RefreshSessionReq) (resp entity.RefreshSessionResp, err error) {
+	resp.Status = content.SucCode
 
-	b, err := redis.Refresh(req.SessionId, content.SessionExpireTime)
-	if err != nil || !b{
+	b, err := redis.Refresh(req.SessionId, content.SessionExpTime)
+	if err != nil || !b {
 		resp.Status = content.TcpServerError
 	}
-	return resp
+	return
 }
 
 // DelSession 移除会话
-func DelSession(req entity.DelSessionReq ) entity.DelSessionResp{
-	resp := entity.DelSessionResp{
-		Status : content.SucCode,
-	}
+func DelSession(req entity.DelSessionReq) (resp entity.DelSessionResp, err error) {
+	resp.Status = content.SucCode
 
-	_, err := redis.Del(req.SessionId)
+	_, err = redis.Del(req.SessionId)
 	if err != nil {
 		resp.Status = content.TcpServerError
 	}
-	return resp
+	return
 }
-

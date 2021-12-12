@@ -36,8 +36,8 @@
             </div>
             <div class="layui-form-item">
                 <div class="layui-input-block">
-                    <button type="submit" class="layui-btn" lay-submit="" lay-filter="edit">立即提交</button>
-                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    <button type="submit" class="layui-btn" lay-submit="" lay-filter="edit">submit</button>
+                    <button type="submit" class="layui-btn layui-btn-primary" lay-submit="" lay-filter="logout">logout</button>
                 </div>
             </div>
         </form>
@@ -87,19 +87,33 @@
             // 监听提交
             form.on('submit(edit)', function(data){
                 $.post(
-                    //1 异步提交的urL
                     '/userEdit',
-                    //2 form表单以键值对形式传输
                     data.field,
-                    //3 访问后成功的回调函数
                     function (response) {
                         response = JSON.parse(response)
                         if (response.status == 200) {
                             layer.msg("User Edit Success!", {icon: 1},);
-                            window.location.reload();
+                            // window.location.reload();
                         }else if(response.status == 1004){
                             layer.msg(response.message, {icon: 1},);
                             window.location.href='/login';
+                        }else{
+                            layer.msg(response.message, {icon: 5});
+                        }
+                    }
+                );
+                return false;
+            });
+            // 监听登出
+            form.on('submit(logout)', function(data){
+                $.post(
+                    '/logout',
+                    data.field,
+                    function (response) {
+                        response = JSON.parse(response)
+                        if (response.status == 200) {
+                            layer.msg("logout Success!", {icon: 1},);
+                            setTimeout(function (){window.location.reload()}, 2000)
                         }else{
                             layer.msg(response.message, {icon: 5});
                         }

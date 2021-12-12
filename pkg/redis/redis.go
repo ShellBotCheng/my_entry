@@ -80,16 +80,16 @@ func Set(key string, val string) (string, error) {
 	return val, err
 }
 
-func SetEx(key string, val string, expireTime int32) error {
-	_, err := Client.SetEX(ctx, key, val, time.Duration(expireTime)).Result()
+func SetEx(key string, val string, expireTime time.Duration) error {
+	_, err := Client.SetEX(ctx, key, val, expireTime).Result()
 	if err != nil {
 		log.Error("SetEx [%s] error: %s", key, err)
 	}
 	return err
 }
 
-func Refresh(key string, expireTime int32) (bool, error) {
-	b, err := Client.Expire(ctx, key, time.Duration(expireTime)).Result()
+func Refresh(key string, expireTime time.Duration) (bool, error) {
+	b, err := Client.Expire(ctx, key, expireTime).Result()
 	if err != nil {
 		log.Error("Refresh [%s] error: %s", key, err)
 	}

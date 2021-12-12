@@ -10,7 +10,7 @@ import (
 	"myEntry/tcpServer/mapper"
 )
 
-func GetUserInfo(req entity.GetUserInfoReq) (resp entity.GetUserInfoResp) {
+func GetUserInfo(req entity.GetUserInfoReq) (resp entity.GetUserInfoResp, err error) {
 	resp.Status = content.SucCode
 
 	// 查缓存
@@ -30,7 +30,7 @@ func GetUserInfo(req entity.GetUserInfoReq) (resp entity.GetUserInfoResp) {
 	// 序列化
 	userJson, err := json.Marshal(user)
 	if err == nil {
-		redis.Set(user.Username, string(userJson))
+		redis.SetEx(user.Username, string(userJson), content.SessionExpTime)
 	}
 	// 装载数据
 	resp.Username = user.Username
@@ -41,46 +41,31 @@ func GetUserInfo(req entity.GetUserInfoReq) (resp entity.GetUserInfoResp) {
 	return
 }
 
-func UpdateUserInfo(req entity.EditUserReq) entity.EditUserResp {
-	resp := entity.EditUserResp{
-		Status: content.SucCode,
-	}
+func UpdateUserInfo(req entity.EditUserReq) (resp entity.EditUserResp, err error) {
+	resp.Status = content.SucCode
+
 	tx, err := mysql.Db.Begin() // 开启事务
+	defer tx.Rollback()
+
 	if err != nil {
-		if tx != nil {
-			err := tx.Rollback()
-			if err != nil {
-				return resp
-			} // 回滚
-		}
+		resp.Status = content.TcpServerError
 		log.Error("begin trans failed, err:%v\n", err)
-		return resp
+		return
 	}
 	n, err := mapper.UpdateUser(req)
 	if err != nil {
 		resp.Status = content.TcpServerError
-		if tx != nil {
-			err := tx.Rollback()
-			if err != nil {
-				return resp
-			} // 回滚
-		}
-		return resp
+		log.Error("UpdateUser failed, err:%v\n", err)
+		return
 	}
 	if n == 0 {
-		resp.Status = content.TcpAccountError
-		return resp
+		return
 	}
 	// 清除缓存
 	_, err = redis.Del(req.Username)
 	if err != nil {
 		resp.Status = content.TcpServerError
-		if tx != nil {
-			err := tx.Rollback()
-			if err != nil {
-				return resp
-			} // 回滚
-		}
 	}
-	return resp
+	tx.Commit()
+	return
 }
