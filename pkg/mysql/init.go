@@ -18,6 +18,7 @@ type Config struct {
 	MaxOpenConn     int    // open pool
 	MaxIdleConn     int    // idle pool
 	ConnMaxLifeTime int
+	TableCount      uint32
 }
 
 // Init 初始化数据库

@@ -1,36 +1,31 @@
 package service
 
 import (
-	"encoding/json"
 	"myEntry/pkg/content"
 	"myEntry/pkg/entity"
 	"myEntry/pkg/log"
+	"myEntry/pkg/lru"
 	"myEntry/pkg/mysql"
-	"myEntry/pkg/redis"
 	"myEntry/tcpServer/mapper"
+	"myEntry/tcpServer/model"
 )
 
 func GetUserInfo(req entity.GetUserInfoReq) (resp entity.GetUserInfoResp, err error) {
 	resp.Status = content.SucCode
 
+	user := model.User{}
 	// 查缓存
-	cache, err := redis.Get(req.Username)
-	if cache != content.EmptyString {
-		err = json.Unmarshal([]byte(cache), &resp)
-		if err == nil {
+	cache, ok := lru.Client.Get(req.Username)
+	if ok {
+		user = cache.(model.User)
+	} else {
+		// 查询db
+		user, err = mapper.GetUser(req.Username)
+		if err != nil {
+			resp.Status = content.TcpServerError
 			return
 		}
-	}
-	// 查询db
-	user, err := mapper.GetUser(req.Username)
-	if err != nil {
-		resp.Status = content.TcpServerError
-		return
-	}
-	// 序列化
-	userJson, err := json.Marshal(user)
-	if err == nil {
-		redis.SetEx(user.Username, string(userJson), content.SessionExpTime)
+		lru.Client.Add(user.Username, user)
 	}
 	// 装载数据
 	resp.Username = user.Username
@@ -62,10 +57,7 @@ func UpdateUserInfo(req entity.EditUserReq) (resp entity.EditUserResp, err error
 		return
 	}
 	// 清除缓存
-	_, err = redis.Del(req.Username)
-	if err != nil {
-		resp.Status = content.TcpServerError
-	}
+	lru.Client.Del(req.Username)
 	tx.Commit()
 	return
 }

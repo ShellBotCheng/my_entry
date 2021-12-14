@@ -7,8 +7,9 @@ mysql:
   Dsn: "root:123qwe@tcp(127.0.0.1:3306)/entry_task?timeout=2s&readTimeout=5s&writeTimeout=5s&parseTime=true&loc=Local&charset=utf8,utf8mb4"
   ShowLog: true                   # 是否打印SQL日志
   MaxIdleConn: 10                 # 最大闲置的连接数，0意味着使用默认的大小2， 小于0表示不使用连接池
-  MaxOpenConn: 60                 # 最大打开的连接数, 需要小于数据库配置中的max_connections数
-  ConnMaxLifeTime: 4000           # 单个连接最大存活时间，建议设置比数据库超时时长(wait_timeout)稍小一些
+  MaxOpenConn: 60                 # 最大打开的连接数
+  ConnMaxLifeTime: 4000           # 单个连接最大存活时间
+  TableCount: 128                 # 分表数量
 
 redis:
   Addr: 127.0.0.1:6379
@@ -21,3 +22,5 @@ redis:
   PoolSize: 100
   PoolTimeout: 240
   IsTrace: true
+lru:
+  Max: 100000

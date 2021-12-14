@@ -1,14 +1,18 @@
 package mapper
 
 import (
+	"fmt"
+	"hash/crc32"
 	"myEntry/pkg/entity"
 	"myEntry/pkg/log"
 	"myEntry/pkg/mysql"
 	"myEntry/tcpServer/model"
+	"strconv"
 )
 
 func GetUser(username string) (user model.User, err error) {
-	row := mysql.Db.QueryRow("select username, password, nickname, salt, pic_url from user where username=?", username)
+	table := getTableName(username)
+	row := mysql.Db.QueryRow("select username, password, nickname, salt, pic_url from ? where username=?", table, username)
 	err = row.Scan(&user.Username, &user.Password, &user.Nickname, &user.Salt, &user.PicUrl)
 	if err != nil {
 		log.Error("GetUser Error:%s", err)
@@ -19,7 +23,8 @@ func GetUser(username string) (user model.User, err error) {
 
 func UpdateUser(q entity.EditUserReq) (affected int, err error) {
 	affected = 0
-	res, err := mysql.Db.Exec("update user set nickname=?, pic_url=? where username=?", q.Nickname, q.PicUrl, q.Username)
+	table := getTableName(q.Username)
+	res, err := mysql.Db.Exec("update ? set nickname=?, pic_url=? where username=?", table, q.Nickname, q.PicUrl, q.Username)
 	if err != nil {
 		log.Error("user %d update err %v", res, err)
 		return
@@ -31,4 +36,9 @@ func UpdateUser(q entity.EditUserReq) (affected int, err error) {
 	}
 	affected = int(affected64)
 	return
+}
+
+// getTableName 获取表名
+func getTableName(uname string) string {
+	return fmt.Sprintf("user_%04s", strconv.Itoa(int(crc32.ChecksumIEEE([]byte(uname))%128)))
 }

@@ -14,9 +14,6 @@ var ctx = context.Background()
 // Client redis 客户端
 var Client *redis.Client
 
-// ErrRedisNotFound not exist in redis
-const ErrRedisNotFound = redis.Nil
-
 // Config redis config
 type Config struct {
 	Addr         string
@@ -59,17 +56,9 @@ func Init(c *Config) *redis.Client {
 	return Client
 }
 
-func Get(key string) (string, error) {
-	val, err := Client.Get(ctx, key).Result()
-	if err == nil {
-		return val, nil
-	}
-	if err == ErrRedisNotFound {
-		log.Warn("Key [%s] is not exist: %s", key)
-		return val, nil
-	}
-	log.Error("Get [%s] error: %s", key, err)
-	return val, err
+func Get(key string) (val string) {
+	val = Client.Get(ctx, key).Val()
+	return
 }
 
 func Set(key string, val string) (string, error) {

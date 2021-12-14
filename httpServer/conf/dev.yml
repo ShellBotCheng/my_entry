@@ -11,10 +11,10 @@ tcpPool:
   # tcp服务地址
   Addr: 127.0.0.1:8081
   # 初始化连接数
-  InitialCap: 4
+  InitialCap: 8
   # 最大并发存活连接数
-  MaxCap: 10
+  MaxCap: 20
   # 最大空闲连接
-  MaxIdle: 8
+  MaxIdle: 16
   # 连接最大空闲时间，超过该事件则将失效
   IdleTimeout: 15

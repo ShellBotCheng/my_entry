@@ -3,6 +3,7 @@ package conf
 import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
+	"myEntry/pkg/lru"
 	"myEntry/pkg/mysql"
 	"myEntry/pkg/redis"
 )
@@ -14,6 +15,8 @@ type Config struct {
 	// component config
 	Mysql mysql.Config
 	Redis redis.Config
+	Lru   lru.Lru
+	Table int
 }
 
 // C AppConfig app config

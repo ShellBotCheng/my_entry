@@ -10,11 +10,7 @@ import (
 func GetSession(req entity.GetSessionReq) (resp entity.GetSessionResp, err error) {
 	resp.Status = content.SucCode
 
-	session, err := redis.Get(req.SessionId)
-	if err != nil {
-		resp.Status = content.TcpServerError
-		return
-	}
+	session := redis.Get(req.SessionId)
 	if session == content.EmptyString {
 		resp.Status = content.TcpSessionMiss
 		return
