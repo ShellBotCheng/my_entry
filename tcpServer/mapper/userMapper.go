@@ -12,10 +12,10 @@ import (
 
 func GetUser(username string) (user model.User, err error) {
 	table := getTableName(username)
-	row := mysql.Db.QueryRow("select username, password, nickname, salt, pic_url from ? where username=?", table, username)
+	row := mysql.GetDB().QueryRow(fmt.Sprintf("select username, password, nickname, salt, pic_url from %s where username='%s'",  table, username))
 	err = row.Scan(&user.Username, &user.Password, &user.Nickname, &user.Salt, &user.PicUrl)
 	if err != nil {
-		log.Error("GetUser Error:%s", err)
+		log.Error("GetUser Error:%s:%s:%s", err,table,username)
 		return
 	}
 	return
@@ -24,7 +24,8 @@ func GetUser(username string) (user model.User, err error) {
 func UpdateUser(q entity.EditUserReq) (affected int, err error) {
 	affected = 0
 	table := getTableName(q.Username)
-	res, err := mysql.Db.Exec("update ? set nickname=?, pic_url=? where username=?", table, q.Nickname, q.PicUrl, q.Username)
+
+	res, err := mysql.Db.Exec(fmt.Sprintf("update %s set nickname='%s', pic_url='%s' where username='%s'",table, q.Nickname, q.PicUrl, q.Username))
 	if err != nil {
 		log.Error("user %d update err %v", res, err)
 		return

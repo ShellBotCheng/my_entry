@@ -13,7 +13,7 @@ mysql:
 
 redis:
   Addr: 127.0.0.1:6379
-  Password: ""
+  Password: "123456"
   DB: 0
   MinIdleConn: 200
   DialTimeout: 60s
